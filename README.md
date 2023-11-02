@@ -39,7 +39,7 @@ The User Interface is built using the Tkinter library, offering a visually appea
 - **Disconnect Button:** Users can click the "Disconnect" button to gracefully exit the chat application.
 - **Random User Color:** Each user is assigned a random color for message differentiation.
 - **Server Configuration:** Users can enter the server's IP address when the application starts, making it adaptable for different servers.
-
+![Chat Demo](image2.png)
 ## Developer Information
 
 The project includes information about the developer, such as name, ID, GitHub profile, project completion date, and website. This information provides transparency and contact details for users interested in the project or seeking support.
