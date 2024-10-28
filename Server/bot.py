@@ -1,5 +1,6 @@
 import requests
 import json
+import random
 
 class KZTJarvis:
     openai_api = None
@@ -16,11 +17,11 @@ class KZTJarvis:
         self.messages = [{"role": "system", "content": self.chatbot_profile}]
 
     def set_auto_config(self):
-        self.openai_api = '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'
-        self.chatbot_profile = ''' You are an AI named 'JARVIS Turbo' built by Tony Stark. 
+        self.openai_api = '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'
+        self.chatbot_profile = '''You are an AI named 'JARVIS Turbo' built by Kamruzzaman Tanvir. 
         Currently, you are working for the Avengers to create creative and scientific content.
         You will always reply with sarcasm with serious answers!
-        Your developer is MD.Kamruzzaman Tanvir, a student of CSE at Eastern University.
+        MD.Kamruzzaman Tanvir, a student of CSE at Eastern University.
         And remember that you cannot provide any type of programming language code.
         '''
         self.model_selected = self.gpt_models["t1"]
@@ -62,23 +63,6 @@ class KZTJarvis:
         self.message_storage(content=reply, role="assistant")
         return reply
 
-    def lets_chat(self):
-        print("Welcome to JarvisGPT")
-        print("You can start the conversation by typing your message.")
-        print("You can also use 'system' messages to provide context or instructions.")
-        while True:
-            user_input = input("\nYou: ")
-            if user_input in ['exit', 'quit']:
-                break
-            else:
-                response, reply = self.send(user_input)
-            if response:
-                print("\n========================= JarvisGPT ===============================\n")
-                print(reply)
-                print("\n========================= JarvisGPT ===============================\n")
-                self.clean_storage()
-            else:
-                print("Something Went Wrong! Please Try Again.")
 
 class AccuWeatherAPI:
     def __init__(self, api_key = "JSlO3f9wy9nOYnjD0DkBSjZzrmeiuzAF"):
@@ -129,8 +113,50 @@ class AccuWeatherAPI:
         else:
             return 'Failed to find the location.'
 
-#if __name__ == '__main__':
-    #my_bot = KZTJarvis()
-    #my_bot.set_config(profile=CHATBOT_CHARACTER, api=MY_API, model="t1")
-    #my_bot.lets_chat()
-    #print(my_bot.send('hi'))
+class GuessNumberGame:
+    def __init__(self, min_number=1, max_number=100):
+        self.leaderboard = []
+        self.min_number = min_number
+        self.max_number = max_number
+
+    def load_leaderboard(self):
+        return sorted(self.leaderboard, key=lambda k: k['score'], reverse=True)
+
+    def add_user(self, name, uid):
+        if self.get_user_index(uid) is None:
+            self.leaderboard.append({"uid": uid, "name": name, "attempts": 0, "score": 0})
+        return f"Welcome to the game, {name}!"
+
+    def play_game(self, uid, guess):
+        if not self.is_valid_guess(guess):
+            return f"Invalid guess, {self.get_user_name(uid)}! Please enter a number between {self.min_number} and {self.max_number}."
+
+        secret_number = random.randint(self.min_number, self.max_number)
+        index = self.get_user_index(uid)
+
+        if guess == secret_number:
+            self.update_leaderboard(index, score=True)
+            return f"Congratulations, {self.get_user_name(uid)}! You guessed the number."
+        elif guess < secret_number:
+            self.update_leaderboard(index)
+            return f"Too low, {self.get_user_name(uid)}! Bad luck, but try again."
+        else:
+            self.update_leaderboard(index)
+            return f"Too high, {self.get_user_name(uid)}! Bad luck, but try again."
+
+    def update_leaderboard(self, index, score=False):
+        if index is not None:
+            self.leaderboard[index]["attempts"] += 1
+            if score:
+                self.leaderboard[index]["score"] += 1
+
+    def is_valid_guess(self, guess):
+        return self.min_number <= guess <= self.max_number
+
+    def get_user_index(self, uid):
+        return next((i for i, user in enumerate(self.leaderboard) if user["uid"] == str(uid)), None)
+
+    def get_user_name(self, uid):
+        index = self.get_user_index(uid)
+        return self.leaderboard[index]['name'] if index is not None else "Unknown User"
+

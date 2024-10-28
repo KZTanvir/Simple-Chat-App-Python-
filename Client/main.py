@@ -8,7 +8,7 @@ class ChatApp:
     def __init__(self, master, client=None):
         self.master = master
         master.title("Simple Chat App")
-        master.geometry("490x550")
+        master.geometry("490x580")
         master.config(bg="#040D12")
         self.title_label = tk.Label(master, text="Simple Chat App", font=('Arial', 16, 'bold'), background='#040D12', width=40, fg="white")
         self.title_label.grid(row=0, column=0, columnspan=4, pady=10)
@@ -22,14 +22,16 @@ class ChatApp:
         self.disconnect_button = None
 
         self.username = None
-        self.server_addr = None
-        self.user_color = random.choice(['green', 'blue', 'white', 'black', 'gray', 'orange', 'purple', 'pink'])
+        
+        self.server_address = None
+        
+        self.user_color = random.choice(['green', 'blue', 'white', 'black', 'gray', 'orange', 'purple', 'pink', "#FF5733", "#33FF57", "#5733FF", "#FF33A1", "#33A1FF", "#A1FF33", "#FF3361", "#3361FF", "#61FF33", "#FF3347", "#3347FF", "#4733FF", "#FF33E5", "#33E5FF", "#E5FF33", "#FF33B6", "#33B6FF", "#B6FF33", "#FF336F", "#336FFF", "#6FFF33", "#FF335A", "#335AFF", "#5AFF33", "#FF337C", "#337CFF", "#7CFF33", "#FF3333", "#3333FF", "#33FF33"])
 
     def ask_ip(self):
-        self.server_addr = simpledialog.askstring("Server IP", "Enter Server IP:")
+        self.server_address = simpledialog.askstring("Server Address", "Enter Server Address:")
+        return False
 
     def setup_ui(self):
-        self.ask_ip()
         self.create_devDetails()
         self.create_username_entry()
         self.create_submit_username_button()
@@ -69,7 +71,7 @@ class ChatApp:
         self.submit_username_button.grid(row=1, column=1, padx=2,)
 
     def create_message_display(self):
-        self.message_display = scrolledtext.ScrolledText(self.master, wrap=tk.WORD, width=50, height=20, state=tk.DISABLED, font=('Arial', 10, 'bold'), border=0, highlightthickness=0, background='#0E1F28', fg="#FAF0E6")
+        self.message_display = scrolledtext.ScrolledText(self.master, wrap=tk.WORD, width=50, height=20, state=tk.DISABLED, font=('monospace', 10, 'bold'), border=0, highlightthickness=0, background='#0E1F28', fg="#FAF0E6")
         self.message_display.grid(row=2, column=0, columnspan=4, padx=10, pady=10, sticky=tk.W + tk.E + tk.N + tk.S)
         self.message_display.tag_config("USER_MSG", foreground="#FAF0E6")
 
@@ -90,11 +92,12 @@ class ChatApp:
     def submit_username(self):
         self.username = self.username_entry.get()
         if self.username:
+            self.ask_ip()
             self.username_entry.config(state=tk.DISABLED)
             self.submit_username_button.config(state=tk.DISABLED)
             self.message_entry.focus()
             self.sec2.config(highlightthickness=0, border=0, relief=None)
-            self.master.after(1000, lambda: self.client.run_client(custom_ip=self.server_addr))#run client after 1 second
+            self.master.after(1000, lambda: self.client.run_client(custom_address=self.server_address))#run client after 1 second
 
     def send_message(self):
         message = self.message_entry.get()
@@ -102,8 +105,7 @@ class ChatApp:
             "uname": f"{self.username}",
             "msg": f"{message}",
             "utype": "USER", #SYSTEM, BOT, USER, ERROR
-            "color": self.user_color, 
-            "is_self": "y"
+            "color": self.user_color
         }
         if self.username and message:
             self.message_display.config(state=tk.NORMAL)
@@ -115,19 +117,22 @@ class ChatApp:
     def message_callback(self, user_data):
         if user_data:
             self.message_display.config(state=tk.NORMAL)
-            self.message_display.tag_config(user_data['uname']+user_data['is_self'], foreground=user_data['color'])
+            self.message_display.tag_config(user_data['uname']+user_data['uid'], foreground=user_data['color'])
             if user_data['utype'] == "USER":
-                self.message_display.insert(tk.END, f"{user_data['uname']}{'(you)' if user_data['is_self'] == 'y' else ''}:", user_data['uname']+user_data['is_self'])
+                self.message_display.insert(tk.END, f"{user_data['uname']}{'(you)' if user_data['is_self'] == 'y' else ''}:", user_data['uname']+user_data['uid'])
                 self.message_display.insert(tk.END, f" {user_data['msg']}\n", "USER_MSG")
             elif user_data['utype'] == "BOT":
-                self.message_display.insert(tk.END, f"{user_data['uname']}:\n{user_data['msg']}\n", user_data['uname']+user_data['is_self'])
+                self.message_display.insert(tk.END, f"{user_data['uname']}:\n{user_data['msg']}\n", user_data['uname']+user_data['uid'])
             elif user_data['utype'] == "SYSTEM":
-                self.message_display.insert(tk.END, f"{user_data['uname']}: {user_data['msg']}\n", user_data['uname']+user_data['is_self'])
+                self.message_display.insert(tk.END, f"{user_data['uname']}: {user_data['msg']}\n", user_data['uname']+user_data['uid'])
             self.message_display.config(state=tk.DISABLED)
             self.message_display.see(tk.END)
     
     def disconnect(self):
-        self.client.disconnect({"uname": self.username, "msg": "DISCONNECT", "utype": "USER", "color": "", "is_self": ""})
+        try:
+            self.client.disconnect({"uname": self.username, "msg": "DISCONNECT", "utype": "USER", "color": "", "is_self": ""})
+        except AttributeError as e:
+            print(e)
         self.master.destroy()
 
 class ChatAppWindow(tk.Tk):

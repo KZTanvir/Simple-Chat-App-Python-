@@ -8,13 +8,25 @@ class ChatClient:
     DISCONNECT_MSG = "DISCONNECT"
     PORT = 4001
     SERVER_ADDR = "127.0.0.1"
-    def __init__(self, port=4001, message_callback=None):
-        self.PORT = port
+    def __init__(self, message_callback=None):
         self.message_callback = message_callback    
+    
+    def parse_address(self, address):
+        try:
+            server_address, port_str = address.split(':')
+            port = int(port_str)
+            return server_address, port
+        except Exception as ve:
+            print(f"Error parsing port: {ve}")
+            return None, None
         
-    def run_client(self, custom_ip=None):
+    def run_client(self, custom_address=None):
+        custom_ip, custom_port = self.parse_address(custom_address)
         if custom_ip:
             self.SERVER_ADDR = custom_ip
+            if custom_port:
+                self.PORT = int(custom_port)
+        
         self.ADDR = (self.SERVER_ADDR, self.PORT)
 
         self.client_link = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,6 +55,8 @@ class ChatClient:
                 exit()
             except ValueError as ve:
                 print(f"Error converting message length to int: {ve}")
+            except:
+                print("Something went wrong.")
 
     def send_message(self, data):
         data = json.dumps(data)
