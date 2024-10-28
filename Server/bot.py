@@ -17,7 +17,7 @@ class KZTJarvis:
         self.messages = [{"role": "system", "content": self.chatbot_profile}]
 
     def set_auto_config(self):
-        self.openai_api = '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'
+        self.openai_api = 'your api'
         self.chatbot_profile = '''You are an AI named 'JARVIS Turbo' built by Kamruzzaman Tanvir. 
         Currently, you are working for the Avengers to create creative and scientific content.
         You will always reply with sarcasm with serious answers!
@@ -65,7 +65,7 @@ class KZTJarvis:
 
 
 class AccuWeatherAPI:
-    def __init__(self, api_key = "JSlO3f9wy9nOYnjD0DkBSjZzrmeiuzAF"):
+    def __init__(self, api_key = "your api key"):
         self.api_key = api_key
         self.base_url = 'http://dataservice.accuweather.com'
         self.location_search_endpoint = '/locations/v1/cities/search'
